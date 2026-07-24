@@ -1,6 +1,8 @@
 {
-  "updated_at": "2026-07-24T10:56:17",
+  "updated_at": "2026-07-24T11:09:56",
   "available_keys": [
     "00003011|2026-07-24|2026-07-25|A형|1"
-  ]
+  ],
+  "login_expired_alerted": false,
+  "login_was_healthy": true
 }
