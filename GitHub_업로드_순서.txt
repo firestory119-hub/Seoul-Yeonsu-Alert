@@ -1,0 +1,33 @@
+[GitHub 업로드 순서]
+
+1. GitHub의 Seoul-Yeonsu-Alert 저장소에서 Upload files를 엽니다.
+
+2. 이 폴더 안의 파일과 폴더를 올립니다.
+   .github 폴더도 반드시 포함해야 합니다.
+
+3. 절대 올리지 않는 파일
+   cookie.txt
+   telegram.json
+   results.csv
+   response_debug.html
+
+4. Commit changes를 누릅니다.
+
+5. 저장소 Settings
+   → Secrets and variables
+   → Actions
+   → New repository secret
+
+6. 아래 3개 Secret을 각각 만듭니다.
+   YEONSU_COOKIE
+   TELEGRAM_BOT_TOKEN
+   TELEGRAM_CHAT_ID
+
+7. Actions 탭
+   → Seoul Yeonsu Alert
+   → Run workflow
+
+8. 성공 확인 후 5분 예약 실행을 사용합니다.
+
+중요:
+YEONSU_COOKIE가 만료되면 새 Cookie 값으로 Secret만 갱신하면 됩니다.

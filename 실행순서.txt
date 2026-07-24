@@ -1,0 +1,40 @@
+[Yeonsu Alert v2.2 적용 순서]
+
+1. 기존 C:\Yeonsu-Alert-v2.0 폴더에 아래 파일을 덮어씁니다.
+   - main.py
+   - config.json
+   - requirements.txt
+   - state.json
+
+2. 아래 새 파일도 복사합니다.
+   - save_telegram.py
+
+3. 기존 cookie.txt는 그대로 둡니다.
+
+4. 텔레그램 설정:
+   cd /d C:\Yeonsu-Alert-v2.0
+   python save_telegram.py
+
+5. 실행:
+   python main.py
+
+기본 동작:
+- 전체 10개 연수원
+- 앞으로 62일
+- 금요일/토요일 체크인
+- 1박
+- 예약 가능한 일정만 화면 출력
+- 예약 가능한 일정만 results.csv 저장
+- 10분마다 반복
+- 새 빈자리만 텔레그램 전송
+- 종료는 Ctrl+C
+
+중요:
+첫 실행은 현재 존재하는 모든 빈자리를 '새 빈자리'로 보고 텔레그램으로 보냅니다.
+두 번째 실행부터는 새로 생긴 것만 알립니다.
+
+텔레그램을 아직 쓰지 않으려면 config.json에서:
+"telegram_enabled": false
+
+반복하지 않고 한 번만 검사하려면:
+"repeat_minutes": 0
