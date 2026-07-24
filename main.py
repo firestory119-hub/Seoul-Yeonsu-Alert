@@ -69,21 +69,23 @@ def load_telegram() -> dict | None:
     return data
 
 
-def load_state() -> set[str]:
-    data = load_json(STATE_FILE, {"available_keys": []})
-    return set(data.get("available_keys", []))
+def load_state() -> dict:
+    default = {
+        "updated_at": None,
+        "available_keys": [],
+        "login_expired_alerted": False,
+        "login_was_healthy": True,
+    }
+    data = load_json(STATE_FILE, default)
+    for key, value in default.items():
+        data.setdefault(key, value)
+    return data
 
 
-def save_state(keys: set[str]) -> None:
+def save_state(data: dict) -> None:
+    data["updated_at"] = datetime.now().isoformat(timespec="seconds")
     STATE_FILE.write_text(
-        json.dumps(
-            {
-                "updated_at": datetime.now().isoformat(timespec="seconds"),
-                "available_keys": sorted(keys),
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
+        json.dumps(data, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
 
@@ -184,7 +186,7 @@ def fetch_html(session, facility_code, check_in, check_out) -> str:
 
 def verify_login(html: str) -> None:
     if "로그아웃" not in html or "/mypage/" not in html:
-        raise RuntimeError("로그인 세션이 만료되었습니다. Cookie를 다시 저장하세요.")
+        raise RuntimeError("LOGIN_EXPIRED")
 
 
 def extract_facility_branch(html: str, facility_code: str) -> str:
@@ -244,6 +246,46 @@ def send_telegram(settings: dict, text: str) -> None:
     response.raise_for_status()
 
 
+def notify_login_expired(telegram: dict | None, state: dict) -> None:
+    if state.get("login_expired_alerted"):
+        return
+
+    message = (
+        "⚠️ 서울시 연수원 로그인 만료\n\n"
+        "예약 조회가 중단되었습니다.\n\n"
+        "조치 방법\n"
+        "1. 연수원 사이트에 다시 로그인\n"
+        "2. 새 Cookie를 복사\n"
+        "3. GitHub Secret의 YEONSU_COOKIE 갱신\n\n"
+        "갱신 후 다음 실행부터 자동 복구됩니다."
+    )
+
+    if telegram:
+        send_telegram(telegram, message)
+
+    state["login_expired_alerted"] = True
+    state["login_was_healthy"] = False
+    save_state(state)
+
+
+def notify_login_recovered(telegram: dict | None, state: dict) -> None:
+    if not state.get("login_expired_alerted"):
+        state["login_was_healthy"] = True
+        return
+
+    message = (
+        "✅ 서울시 연수원 로그인 복구 완료\n\n"
+        "예약 감시를 다시 시작합니다."
+    )
+
+    if telegram:
+        send_telegram(telegram, message)
+
+    state["login_expired_alerted"] = False
+    state["login_was_healthy"] = True
+    save_state(state)
+
+
 def write_results(rows: list[dict[str, str]]) -> None:
     with RESULT_FILE.open("w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(
@@ -266,7 +308,8 @@ def run_once(config: dict) -> tuple[int, int]:
     show_only_available = bool(config.get("show_only_available", True))
     save_only_available = bool(config.get("save_only_available", True))
 
-    previous = load_state()
+    state = load_state()
+    previous = set(state.get("available_keys", []))
     current = set()
     rows = []
     available_schedules = 0
@@ -275,7 +318,7 @@ def run_once(config: dict) -> tuple[int, int]:
     number = 0
 
     print("\n" + "=" * 72)
-    print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] Seoul Yeonsu Alert v3.0 검사 시작")
+    print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] Seoul Yeonsu Alert v3.1 검사 시작")
     print(f"조회 범위: {stays[0][0]:%Y-%m-%d} ~ {stays[-1][1]:%Y-%m-%d}" if stays else "조회 범위: 없음")
     print(f"총 조회 수: {total}")
     print("=" * 72)
@@ -289,6 +332,14 @@ def run_once(config: dict) -> tuple[int, int]:
             try:
                 html = fetch_html(session, facility_code, check_in, check_out)
                 verify_login(html)
+
+                if not state.get("_recovery_checked"):
+                    try:
+                        notify_login_recovered(telegram if telegram_enabled else None, state)
+                    except Exception as exc:
+                        print(f"⚠️ 로그인 복구 알림 전송 실패: {exc}")
+                    state["_recovery_checked"] = True
+
                 rooms = parse_rooms(html, facility_code)
 
                 if rooms:
@@ -324,7 +375,7 @@ def run_once(config: dict) -> tuple[int, int]:
                             f"🏨 {facility_name}\n"
                             f"📅 {check_in:%Y-%m-%d} → {check_out:%Y-%m-%d}\n"
                             + "\n".join(f"• {r.name}: {r.count}개" for r in new_rooms)
-                            + f"\n\n예약: {BASE_URL}"
+                            + f"\n\n👉 예약 페이지: {LIST_URL}"
                         )
                         try:
                             send_telegram(telegram, message)
@@ -348,19 +399,29 @@ def run_once(config: dict) -> tuple[int, int]:
                         })
 
             except Exception as exc:
+                if str(exc) == "LOGIN_EXPIRED":
+                    print("❌ 로그인 세션 만료 감지")
+                    try:
+                        notify_login_expired(telegram, state)
+                        print("📲 로그인 만료 알림 처리 완료")
+                    except Exception as notify_exc:
+                        print(f"⚠️ 로그인 만료 알림 전송 실패: {notify_exc}")
+                    raise RuntimeError("로그인 세션이 만료되었습니다. YEONSU_COOKIE를 갱신하세요.")
+
                 errors += 1
                 print(
                     f"⚠️ ({number}/{total}) {facility_name} | "
                     f"{check_in:%Y-%m-%d} → {check_out:%Y-%m-%d} | {exc}"
                 )
-                if "로그인 세션" in str(exc):
-                    raise
 
             if delay > 0:
                 time.sleep(delay)
 
     write_results(rows)
-    save_state(current)
+    state.pop("_recovery_checked", None)
+    state["available_keys"] = sorted(current)
+    state["login_was_healthy"] = True
+    save_state(state)
 
     print("=" * 72)
     print(f"예약 가능 일정: {available_schedules}건")
