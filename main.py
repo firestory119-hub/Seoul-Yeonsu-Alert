@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+from collections import defaultdict
 import json
 import os
 import re
@@ -356,6 +357,66 @@ def send_telegram(settings: dict, text: str) -> None:
     response.raise_for_status()
 
 
+
+def build_summary_messages(
+    grouped_alerts: dict[str, list[dict[str, object]]],
+    checked_at: datetime,
+    elapsed_seconds: float,
+    max_length: int = 3800,
+) -> list[str]:
+    total_items = sum(len(items) for items in grouped_alerts.values())
+    header = (
+        "🔔 서울시 연수원 신규 빈자리\n\n"
+        f"🕒 조회시간: {checked_at:%Y-%m-%d %H:%M}\n"
+        f"📊 신규 일정: {total_items}건\n"
+    )
+    footer = (
+        f"\n⏱ 소요시간: {elapsed_seconds:.1f}초\n"
+        f"👉 예약 페이지: {LIST_URL}"
+    )
+
+    sections = []
+    for facility_name, items in grouped_alerts.items():
+        lines = [f"🏨 {facility_name} ({len(items)}건)"]
+        for item in items:
+            room_text = ", ".join(
+                f"{room.name} {room.count}개" for room in item["rooms"]
+            )
+            lines.append(
+                f"• {item['check_in']:%m/%d}~{item['check_out']:%m/%d} | {room_text}"
+            )
+        sections.append("\n".join(lines))
+
+    messages = []
+    current = header
+    for section in sections:
+        candidate = current + "\n\n━━━━━━━━━━━━\n\n" + section
+        if len(candidate + footer) > max_length and current != header:
+            messages.append(current + footer)
+            current = header + "\n\n" + section
+        else:
+            current = candidate
+
+    if current != header:
+        messages.append(current + footer)
+
+    return messages
+
+
+def send_grouped_alerts(
+    telegram: dict,
+    grouped_alerts: dict[str, list[dict[str, object]]],
+    checked_at: datetime,
+    elapsed_seconds: float,
+) -> int:
+    messages = build_summary_messages(grouped_alerts, checked_at, elapsed_seconds)
+    for index, message in enumerate(messages, start=1):
+        if len(messages) > 1:
+            message += f"\n\n({index}/{len(messages)})"
+        send_telegram(telegram, message)
+    return len(messages)
+
+
 def write_results(rows: list[dict[str, str]]) -> None:
     with RESULT_FILE.open("w", newline="", encoding="utf-8-sig") as file:
         writer = csv.DictWriter(
@@ -376,7 +437,7 @@ def run_once(config: dict) -> int:
     session = make_session()
 
     print("=" * 72)
-    print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] Seoul Yeonsu Alert v4.0")
+    print(f"[{datetime.now():%Y-%m-%d %H:%M:%S}] Seoul Yeonsu Alert v4.1")
     print("자동 로그인 시작")
 
     try:
@@ -424,6 +485,7 @@ def run_once(config: dict) -> int:
     number = 0
     available_schedules = 0
     new_alerts = 0
+    grouped_alerts: dict[str, list[dict[str, object]]] = defaultdict(list)
     errors = 0
 
     for facility_name, facility_code in facilities.items():
@@ -474,22 +536,13 @@ def run_once(config: dict) -> int:
                         "상태": "예약 가능",
                     })
 
-                if new_rooms and telegram:
-                    message = (
-                        "🔔 서울시 연수원 빈자리\n\n"
-                        f"🏨 {facility_name}\n"
-                        f"📅 {check_in:%Y-%m-%d} → {check_out:%Y-%m-%d}\n"
-                        + "\n".join(
-                            f"• {room.name}: {room.count}개" for room in new_rooms
-                        )
-                        + f"\n\n👉 예약 페이지: {LIST_URL}"
-                    )
-                    try:
-                        send_telegram(telegram, message)
-                        new_alerts += 1
-                        print("📲 텔레그램 전송 완료")
-                    except Exception as exc:
-                        print(f"⚠️ 텔레그램 전송 실패: {exc}")
+                if new_rooms:
+                    grouped_alerts[facility_name].append({
+                        "check_in": check_in,
+                        "check_out": check_out,
+                        "rooms": new_rooms,
+                    })
+                    new_alerts += 1
 
             except Exception as exc:
                 errors += 1
@@ -501,13 +554,29 @@ def run_once(config: dict) -> int:
             if delay > 0:
                 time.sleep(delay)
 
+    elapsed = time.monotonic() - started
+
+    if grouped_alerts and telegram:
+        try:
+            message_count = send_grouped_alerts(
+                telegram,
+                grouped_alerts,
+                datetime.now(),
+                elapsed,
+            )
+            print(
+                f"📲 텔레그램 묶음 알림 전송 완료: "
+                f"{new_alerts}건 / 메시지 {message_count}개"
+            )
+        except Exception as exc:
+            print(f"⚠️ 텔레그램 묶음 알림 전송 실패: {exc}")
+
     write_results(rows)
     state["available_keys"] = sorted(current)
     state["last_login_ok"] = True
     state["last_error"] = None
     save_state(state)
 
-    elapsed = time.monotonic() - started
     print("=" * 72)
     print(f"예약 가능 일정: {available_schedules}건")
     print(f"신규 텔레그램 알림: {new_alerts}건")
