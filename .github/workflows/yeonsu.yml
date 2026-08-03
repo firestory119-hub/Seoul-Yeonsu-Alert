@@ -1,4 +1,4 @@
-name: Seoul Yeonsu Alert
+name: Seoul Yeonsu Alert v4
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: seoul-yeonsu-alert
+  group: seoul-yeonsu-alert-v4
   cancel-in-progress: false
 
 jobs:
@@ -32,15 +32,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Check vacancies
+      - name: Run alert
         env:
-          YEONSU_COOKIE: ${{ secrets.YEONSU_COOKIE }}
+          YEONSU_ID: ${{ secrets.YEONSU_ID }}
+          YEONSU_PASSWORD: ${{ secrets.YEONSU_PASSWORD }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python main.py
 
-      - name: Save notification state
-        if: success()
+      - name: Save state
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -48,6 +49,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No state change"
           else
-            git commit -m "Update vacancy state [skip ci]"
+            git commit -m "Update v4 state [skip ci]"
             git push
           fi
