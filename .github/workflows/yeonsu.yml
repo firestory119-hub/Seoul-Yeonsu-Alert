@@ -1,4 +1,4 @@
-name: Seoul Yeonsu Alert v4
+name: Seoul Yeonsu Alert v4.1
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: seoul-yeonsu-alert-v4
+  group: seoul-yeonsu-alert-v4-1
   cancel-in-progress: false
 
 jobs:
