@@ -11,12 +11,8 @@ if not chat_id:
     raise SystemExit("Chat ID가 비어 있습니다.")
 
 Path("telegram.json").write_text(
-    json.dumps(
-        {"bot_token": token, "chat_id": chat_id},
-        ensure_ascii=False,
-        indent=2,
-    ),
+    json.dumps({"bot_token": token, "chat_id": chat_id}, ensure_ascii=False, indent=2),
     encoding="utf-8",
 )
 print("저장 완료: telegram.json")
-print("이 파일은 비밀정보이므로 공유하지 마세요.")
+print("이 파일은 GitHub에 올리지 마세요.")

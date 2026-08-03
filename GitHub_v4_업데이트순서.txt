@@ -1,0 +1,29 @@
+[GitHub v4 업데이트 순서]
+
+1. 기존 저장소의 아래 파일을 v4 파일로 교체
+   main.py
+   config.json
+   requirements.txt
+   state.json
+   README.md
+   .github/workflows/yeonsu.yml
+
+2. Settings → Secrets and variables → Actions
+
+3. 새 Secret 추가
+   YEONSU_ID
+   YEONSU_PASSWORD
+
+4. 기존 Secret 유지
+   TELEGRAM_BOT_TOKEN
+   TELEGRAM_CHAT_ID
+
+5. YEONSU_COOKIE는 v4에서 사용하지 않음
+   v4 정상 작동 확인 후 삭제 가능
+
+6. Actions → Seoul Yeonsu Alert v4 → Run workflow
+
+7. 로그에 '자동 로그인 성공'이 보이면 완료
+
+주의:
+login.json, telegram.json, results.csv는 GitHub에 올리지 마세요.
