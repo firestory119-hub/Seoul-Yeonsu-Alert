@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-07-24T21:19:40",
+  "updated_at": null,
   "available_keys": [],
-  "login_expired_alerted": false,
-  "login_was_healthy": true
+  "last_login_ok": null,
+  "last_error": null
 }
