@@ -1,6 +1,8 @@
 {
-  "updated_at": "2026-08-23T14:41:10",
-  "available_keys": [],
+  "updated_at": "2026-08-23T15:00:11",
+  "available_keys": [
+    "00003008|2026-08-28|2026-08-29|A형|1"
+  ],
   "last_login_ok": true,
   "last_error": null
 }
