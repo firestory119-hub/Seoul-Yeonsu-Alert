@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-08-23T14:10:48",
+  "updated_at": "2026-08-23T14:41:10",
   "available_keys": [],
-  "last_login_ok": false,
-  "last_error": "로그인 페이지에서 csrf_token을 찾지 못했습니다.\nhttps://yeonsu.eseoul.go.kr/main → HTTPSConnectionPool(host='yeonsu.eseoul.go.kr', port=443): Max retries exceeded with url: /main (Caused by ConnectTimeoutError(<HTTPSConnection(host='yeonsu.eseoul.go.kr', port=443) at 0x7fb64b6d31d0>, 'Connection to yeonsu.eseoul.go.kr timed out. (connect timeout=30)'))\nhttps://yeonsu.eseoul.go.kr/ → HTTPSConnectionPool(host='yeonsu.eseoul.go.kr', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<HTTPSConnection(host='yeonsu.eseoul.go.kr', port=443) at 0x7fb64b6d8190>, 'Connection to yeonsu.eseoul.go.kr timed out. (connect timeout=30)'))\nhttps://yeonsu.eseoul.go.kr/login → HTTPSConnectionPool(host='yeonsu.eseoul.go.kr', port=443): Max retries exceeded with url: /login (Caused by ConnectTimeoutError(<HTTPSConnection(host='yeonsu.eseoul.go.kr', port=443) at 0x7fb64b6d2490>, 'Connection to yeonsu.eseoul.go.kr timed out. (connect timeout=30)'))"
+  "last_login_ok": true,
+  "last_error": null
 }
