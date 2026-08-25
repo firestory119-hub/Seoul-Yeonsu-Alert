@@ -1,6 +1,16 @@
 {
-  "updated_at": "2026-08-25T21:13:08",
-  "available_keys": [],
-  "last_login_ok": false,
-  "last_error": "로그인 페이지에서 csrf_token을 찾지 못했습니다.\nhttps://yeonsu.eseoul.go.kr/main → HTTPSConnectionPool(host='yeonsu.eseoul.go.kr', port=443): Max retries exceeded with url: /main (Caused by ConnectTimeoutError(<HTTPSConnection(host='yeonsu.eseoul.go.kr', port=443) at 0x7f4c61b81950>, 'Connection to yeonsu.eseoul.go.kr timed out. (connect timeout=30)'))\nhttps://yeonsu.eseoul.go.kr/ → HTTPSConnectionPool(host='yeonsu.eseoul.go.kr', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<HTTPSConnection(host='yeonsu.eseoul.go.kr', port=443) at 0x7f4c609a83d0>, 'Connection to yeonsu.eseoul.go.kr timed out. (connect timeout=30)'))\nhttps://yeonsu.eseoul.go.kr/login → HTTPSConnectionPool(host='yeonsu.eseoul.go.kr', port=443): Max retries exceeded with url: /login (Caused by ConnectTimeoutError(<HTTPSConnection(host='yeonsu.eseoul.go.kr', port=443) at 0x7f4c609a2910>, 'Connection to yeonsu.eseoul.go.kr timed out. (connect timeout=30)'))"
+  "updated_at": "2026-08-25T21:46:02",
+  "available_keys": [
+    "00003003|2026-08-28|2026-08-29|B형|1",
+    "00003003|2026-08-28|2026-08-29|C형|11",
+    "00003003|2026-08-28|2026-08-29|O형|6",
+    "00003004|2026-08-28|2026-08-29|B형|5",
+    "00003006|2026-09-18|2026-09-19|A형|1",
+    "00003008|2026-08-28|2026-08-29|A형|2",
+    "00003009|2026-08-28|2026-08-29|B형|1",
+    "00003011|2026-08-28|2026-08-29|A형|1",
+    "00003012|2026-08-28|2026-08-29|A형|2"
+  ],
+  "last_login_ok": true,
+  "last_error": null
 }
