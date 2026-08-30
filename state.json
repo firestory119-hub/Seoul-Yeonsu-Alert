@@ -1,11 +1,11 @@
 {
-  "updated_at": "2026-08-30T19:30:09",
+  "updated_at": "2026-08-30T22:02:15",
   "available_keys": [
     "00003003|2026-09-04|2026-09-05|C형|1",
     "00003003|2026-09-04|2026-09-05|O형|1",
     "00003008|2026-09-04|2026-09-05|A형|1",
     "00003011|2026-09-04|2026-09-05|A형|1"
   ],
-  "last_login_ok": false,
-  "last_error": "HTTPSConnectionPool(host='yeonsu.eseoul.go.kr', port=443): Read timed out. (read timeout=30)"
+  "last_login_ok": true,
+  "last_error": null
 }
