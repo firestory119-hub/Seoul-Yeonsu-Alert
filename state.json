@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-05T19:31:18",
+  "updated_at": "2026-09-05T21:42:36",
   "available_keys": [
     "00003002|2026-10-02|2026-10-03|B형|1",
     "00003002|2026-10-03|2026-10-04|B형|1",
@@ -121,6 +121,6 @@
     "00003012|2026-10-30|2026-10-31|A형|1",
     "00003012|2026-10-31|2026-11-01|A형|1"
   ],
-  "last_login_ok": false,
-  "last_error": "로그인 페이지에서 csrf_token을 찾지 못했습니다.\nhttps://yeonsu.eseoul.go.kr/main → HTTP 500\nhttps://yeonsu.eseoul.go.kr/ → csrf_token 없음\nhttps://yeonsu.eseoul.go.kr/login → HTTP 404"
+  "last_login_ok": true,
+  "last_error": null
 }
